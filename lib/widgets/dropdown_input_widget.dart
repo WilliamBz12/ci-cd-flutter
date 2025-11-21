@@ -12,8 +12,9 @@ class DropdownInputWidget extends StatelessWidget {
     required this.selectedOption,
     required this.onChanged,
     required this.options,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -33,7 +34,7 @@ class DropdownInputWidget extends StatelessWidget {
         ],
       ),
       child: DropdownButtonFormField<String>(
-        value: selectedOption, // Valor selecionado.
+        initialValue: selectedOption, // Valor selecionado.
         items: options.map((String option) {
           return DropdownMenuItem<String>(
             value: option,
