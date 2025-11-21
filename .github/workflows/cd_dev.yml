@@ -32,7 +32,8 @@ jobs:
         path: build/app/outputs/flutter-apk/app-debug.apk
     
     - name: Upload to Firebase App Distribution
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: |
-          curl -sL https://firebase.tools | bash | firebase appdistribution:distribute build/app/outputs/flutter-apk/app-debug.apk --app ${{ secrets.FIREBASE_APP_ID }} 
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      run: |
+        curl -sL https://firebase.tools | bash  # Install Firebase CLI
+        firebase appdistribution:distribute build/app/outputs/flutter-apk/app-debug.apk --app ${{ secrets.FIREBASE_APP_ID }} 
