@@ -7,27 +7,26 @@ on:
 
 jobs:
   integration-test:
-    name: Run Integration Test on Android Emulator
+    name: Firebase App Distributio 
     runs-on: ubuntu-latest
+    steps: 
+    - name: Checkout no código
+      uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Configurar Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.35.6'
+        channel: 'stable'
+        cache: true
+    
+    - name: Flutter pub get
+      run: flutter pub get
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.13.6'
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Run integration tests on Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          arch: x86_64
-          profile: Nexus 6
-          script: flutter test integration_test/app_test.dart
+    - name: Run integration tests on Android emulator
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 30
+        arch: x86_64
+        profile: Nexus 6
+        script: flutter test integration_test/app_test.dart
