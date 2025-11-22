@@ -24,9 +24,6 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - uses: futureware-tech/simulator-action@v3
-        with:
-          model: 'iPhone 14'
 
 
       - name: Run integration tests on Android emulator
