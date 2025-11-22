@@ -26,7 +26,9 @@ jobs:
     - name: Run integration tests on Android emulator
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 30
+        api-level: 29
         arch: x86_64
-        profile: Nexus 6
-        script: flutter test integration_test/app_test.dart
+        profile: pixel_4
+        force-software-rendering: true
+        script: |
+          flutter test integration_test/app_test.dart --dart-define=FLUTTER_IMPELLER=false
