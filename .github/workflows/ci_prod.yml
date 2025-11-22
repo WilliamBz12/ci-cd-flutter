@@ -7,28 +7,29 @@ on:
 
 jobs:
   integration-test:
-    name: Firebase App Distributio 
-    runs-on: ubuntu-latest
+    name: Run Integration Tests
+    runs-on: macos-latest
+
     steps: 
-    - name: Checkout no código
-      uses: actions/checkout@v4
+      - name: Checkout no código
+        uses: actions/checkout@v4
 
-    - name: Configurar Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.35.6'
-        channel: 'stable'
-        cache: true
-    
-    - name: Flutter pub get
-      run: flutter pub get
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.6'
+          channel: 'stable'
+          cache: true
+      
+      - name: Flutter pub get
+        run: flutter pub get
 
-    - name: Run integration tests on Android emulator
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        arch: x86_64
-        profile: pixel_4
-        force-software-rendering: true
-        script: |
-          flutter test integration_test/app_test.dart --dart-define=FLUTTER_IMPELLER=false
+      - name: Run integration tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          arch: x86_64
+          profile: pixel_4
+          force-software-rendering: true
+          script: |
+            flutter test integration_test/app_test.dart --dart-define=FLUTTER_IMPELLER=false
