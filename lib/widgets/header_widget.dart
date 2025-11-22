@@ -20,6 +20,9 @@ class HeaderWidget extends StatelessWidget {
         Image.asset(
           ImageConstants.ilustration,
           height: 120,
+          errorBuilder: (context, error, stackTrace) {
+            return const SizedBox(height: 120);
+          },
         ),
       ],
     );

@@ -96,6 +96,9 @@ class _HomeFormWidgetState extends State<HomeFormWidget> {
               Image.asset(
                 ImageConstants.shoppingBags,
                 height: 140,
+                errorBuilder: (context, error, stackTrace) {
+                  return const SizedBox(height: 140);
+                },
               ),
               const SizedBox(height: 20),
             ],

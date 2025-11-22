@@ -91,6 +91,9 @@ class _DrawFormWidgetState extends State<DrawFormWidget> {
             Image.asset(
               ImageConstants.plane,
               height: 140,
+              errorBuilder: (context, error, stackTrace) {
+                return const SizedBox(height: 140);
+              },
             ),
           ],
         ),
