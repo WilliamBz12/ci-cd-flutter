@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:secrete_friend_drawer/layout/colors.dart';
 import 'package:secrete_friend_drawer/pages/draw_page.dart';
 
 import 'pages/home_page.dart';
 
 void main() {
+  GoogleFonts.config.allowRuntimeFetching = true;
   runApp(const MyApp());
 }
 

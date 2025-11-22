@@ -24,10 +24,17 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Iniciar emulador
-        uses: futureware-tech/simulator-action@v3
+      - uses: futureware-tech/simulator-action@v3
         with:
           model: 'iPhone 14'
-      
-      - name: Integration tests
-        run: flutter test integration_test/app_test.dart
+
+
+      - name: Run integration tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          arch: x86_64
+          profile: pixel_4
+          force-software-rendering: true
+          script: |
+            flutter test integration_test/app_test.dart --dart-define=FLUTTER_IMPELLER=false
