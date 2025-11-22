@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:secrete_friend_drawer/main.dart';
 import 'package:secrete_friend_drawer/widgets/widgets.dart';
@@ -7,6 +8,10 @@ import 'package:secrete_friend_drawer/widgets/widgets.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
 
   testWidgets('E2E - All app flow', (WidgetTester tester) async {
     // Scenario 1: Check initial state in HomeFormWidget
