@@ -21,6 +21,32 @@ jobs:
     
     - name: Flutter pub get
       run: flutter pub get
+
+    - name: Decode Firebase credentials
+      id: decode-credentials
+      run: |
+        echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > ${{ github.workspace }}/firebase-credentials.json
+        echo "filePath=${{ github.workspace }}/firebase-credentials.json" >> $GITHUB_OUTPUT
+        CREDENTIALS_JSON=$(cat ${{ github.workspace }}/firebase-credentials.json)
+        echo "credentials_json<<EOF" >> $GITHUB_OUTPUT
+        echo "$CREDENTIALS_JSON" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ steps.decode-credentials.outputs.credentials_json }}
+
+    - name: Setup gcloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+        export_default_credentials: true
+
+    - name: Verify authentication
+      run: |
+        gcloud auth list
+        gcloud config get-value project
     
     - name: Build app
       run: flutter build apk --debug
@@ -30,29 +56,17 @@ jobs:
       with:
         name: debug-apk
         path: build/app/outputs/flutter-apk/app-debug.apk
-    
-    - name: Setup gcloud CLI
-      uses: google-github-actions/setup-gcloud@v2
-      with:
-        project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-
-    - name: Download gcloud config json file
-      id: gcloud_config
-      uses: timheuer/base64-to-file@v1.0.3
-      with:
-        fileName: firebase-credentials.json
-        encodedString: ${{ secrets.FIREBASE_CREDENTIALS }}
 
     - name: Configure the gcloud account
       run: |
-        gcloud auth activate-service-account --key-file="${{ steps.gcloud_config.outputs.filePath }}"
+        gcloud auth activate-service-account --key-file="${{ steps.decode-credentials.outputs.filePath }}"
 
     - name: Install Firebase CLI
       run: curl -sL https://firebase.tools | bash
 
     - name: Distribute to Firebase App Distribution
       env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcloud_config.outputs.filePath }}
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.decode-credentials.outputs.filePath }}
       run: |
         firebase appdistribution:distribute build/app/outputs/flutter-apk/app-debug.apk \
           --app ${{ secrets.FIREBASE_APP_ID }} \
