@@ -1,4 +1,4 @@
-name: Flutter Integration Tests (Android)
+name: Integration Test with Firebase Test Lab
 
 on:
   push:
@@ -7,29 +7,49 @@ on:
 
 jobs:
   integration-test:
-    name: Run Integration Tests
+    name: Run Integration Tests on Firebase Test Lab
     runs-on: ubuntu-latest
 
-    steps: 
-      - name: Checkout no código
+    steps:
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configurar Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.6'
-          channel: 'stable'
-          cache: true
-      
-      - name: Flutter pub get
+          flutter-version: '3.13.6'
+          channel: stable
+
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Run integration tests on Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
+      - name: Build app APK
+        run: flutter build apk --debug
+
+      - name: Build test APK (instrumentation)
+        run: |
+          cd android
+          ./gradlew assembleAndroidTest
+          cd ..
+
+      - name: Decode Firebase credentials
+        run: |
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 --decode > ${{ github.workspace }}/firebase.json
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          api-level: 29
-          arch: x86_64
-          profile: pixel_4
-          force-software-rendering: true
-          script: |
-            flutter test integration_test/app_test.dart --dart-define=FLUTTER_IMPELLER=false
+          credentials_json: ${{ secrets.FIREBASE_CREDENTIALS }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Run integration tests in Firebase Test Lab
+        run: |
+          gcloud firebase test android run \
+            --type instrumentation \
+            --app build/app/outputs/flutter-apk/app-debug.apk \
+            --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
+            --device model=Pixel2,version=30,locale=en,orientation=portrait

@@ -31,9 +31,18 @@ jobs:
         name: debug-apk
         path: build/app/outputs/flutter-apk/app-debug.apk
     
-    - name: Upload to Firebase App Distribution
-      env:
-        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+    - name: Decode Firebase credentials
       run: |
-        curl -sL https://firebase.tools | bash  # Install Firebase CLI
-        firebase appdistribution:distribute build/app/outputs/flutter-apk/app-debug.apk --app ${{ secrets.FIREBASE_APP_ID }} 
+        echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 --decode > ${{ github.workspace }}/firebase.json
+
+    - name: Install Firebase CLI
+      run: curl -sL https://firebase.tools | bash
+
+    - name: Distribute to Firebase App Distribution
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase.json
+      run: |
+        firebase appdistribution:distribute build/app/outputs/flutter-apk/app-debug.apk \
+          --app ${{ secrets.FIREBASE_APP_ID }} \
+          --groups "QA" \
+          --release-notes "Build automática via GitHub Actions"
