@@ -22,15 +22,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build app APK
-        run: flutter build apk --debug
-
-      - name: Build test APK (instrumentation)
-        run: |
-          cd android
-          ./gradlew assembleAndroidTest
-          cd ..
-      
       - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
@@ -40,10 +31,17 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
+
+      - name: Build APKs for testing
+        run: |
+          pushd android
+          flutter build apk
+          ./gradlew app:assembleAndroidTest
+          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
+          popd
   
       - name: Run Integration Test on Firebase Test Lab
         run: |
-          gcloud firebase test android run \
-            --type instrumentation \
-            --app build/app/outputs/flutter-apk/app-debug.apk \
-            --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          gcloud firebase test android run --type instrumentation \
+            --app build/app/outputs/apk/debug/app-debug.apk \
+            --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk 
