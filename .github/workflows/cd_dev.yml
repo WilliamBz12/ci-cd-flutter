@@ -45,6 +45,14 @@ jobs:
     - name: Install Firebase CLI
       run: curl -sL https://firebase.tools | bash
 
+    - name: Authenticate Firebase CLI
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-credentials.json
+      run: |
+        export GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-credentials.json
+        gcloud auth activate-service-account --key-file=/tmp/firebase-credentials.json
+        gcloud config set project ${{ secrets.FIREBASE_PROJECT_ID }}
+
     - name: Distribute to Firebase App Distribution
       env:
         GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-credentials.json
@@ -52,4 +60,5 @@ jobs:
         firebase appdistribution:distribute build/app/outputs/flutter-apk/app-debug.apk \
           --app ${{ secrets.FIREBASE_APP_ID }} \
           --groups "QA" \
-          --release-notes "Build automática via GitHub Actions"
+          --release-notes "Build automática via GitHub Actions" \
+          --token $(gcloud auth print-access-token)
