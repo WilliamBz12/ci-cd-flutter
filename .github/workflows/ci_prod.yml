@@ -19,21 +19,6 @@ jobs:
           flutter-version: '3.35.6'
           channel: stable
 
-      - name: Decode Firebase credentials
-        run: |
-          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > /tmp/firebase-credentials.json
-
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-
-      - name: Authenticate with service account
-        run: |
-          gcloud auth activate-service-account --key-file=/tmp/firebase-credentials.json
-          gcloud config get-value project
-          gcloud auth list
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -45,12 +30,20 @@ jobs:
           cd android
           ./gradlew assembleAndroidTest
           cd ..
+      
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
 
-      - name: Run integration tests in Firebase Test Lab
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
+  
+      - name: Run Integration Test on Firebase Test Lab
         run: |
           gcloud firebase test android run \
             --type instrumentation \
             --app build/app/outputs/flutter-apk/app-debug.apk \
-            --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
-            --device model=Pixel2,version=30,locale=en,orientation=portrait \
-            --timeout 15m
+            --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk
