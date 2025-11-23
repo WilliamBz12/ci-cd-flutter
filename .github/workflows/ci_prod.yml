@@ -32,18 +32,24 @@ jobs:
           cd ..
 
       - name: Decode Firebase credentials
+        id: decode-credentials
         run: |
-          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 --decode > ${{ github.workspace }}/firebase.json
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > /tmp/firebase-credentials.json
+          CREDENTIALS_JSON=$(cat /tmp/firebase-credentials.json)
+          echo "credentials_json<<EOF" >> $GITHUB_OUTPUT
+          echo "$CREDENTIALS_JSON" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.FIREBASE_CREDENTIALS }}
+          credentials_json: ${{ steps.decode-credentials.outputs.credentials_json }}
 
       - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+          export_default_credentials: true
 
       - name: Run integration tests in Firebase Test Lab
         run: |
