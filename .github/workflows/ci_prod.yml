@@ -31,21 +31,25 @@ jobs:
           ./gradlew assembleAndroidTest
           cd ..
 
-      - name: Decode Firebase credentials
-        run: |
-          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > /tmp/firebase-credentials.json
-
       - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
-          service_account_key: /tmp/firebase-credentials.json
           project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-          export_default_credentials: true
 
-      - name: Run integration tests in Firebase Test Lab
+      - name: Download gcloud config json file
+        id: gcloud_config
+        uses: timheuer/base64-to-file@v1.0.3
+        with:
+          fileName: firebase-credentials.json
+          encodedString: ${{ secrets.FIREBASE_CREDENTIALS }}
+
+      - name: Configure the gcloud account
         run: |
-          gcloud firebase test android run \
-            --type instrumentation \
-            --app build/app/outputs/flutter-apk/app-debug.apk \
-            --test build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk \
-            --device model=Pixel2,version=30,locale=en,orientation=portrait
+          gcloud auth activate-service-account --key-file="${{ steps.gcloud_config.outputs.filePath }}"
+          pushd build
+          gcloud firebase test android run --type=instrumentation \
+            --app "app/outputs/flutter-apk/app-debug.apk" \
+            --test "app/outputs/apk/androidTest/debug/app-debug-androidTest.apk" \
+            --device model=Pixel2,version=30,locale=en,orientation=portrait \
+            --timeout 15m
+          popd
