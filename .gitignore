@@ -49,3 +49,7 @@ app.*.map.json
 *.jks
 *.keystore
 **/key.properties
+
+/ios/fastlane/.env
+/ios/Runner.ipa
+/ios/Runner.app.dSYM.zip
