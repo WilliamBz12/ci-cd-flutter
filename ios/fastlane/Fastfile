@@ -1,0 +1,87 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+
+  before_all do
+    load_asc_api_token
+  end
+
+  lane :load_asc_api_token do
+    app_store_connect_api_key(
+      key_id: ENV["KEY_ID"],
+      issuer_id: ENV["ISSUER_ID"],
+      key_content: ENV["KEY_P8"],
+      is_key_content_base64: true,
+      in_house: false
+    )
+  end
+
+  desc "Upload para App Store (Draft) + TestFlight interno"
+  lane :release_draft do
+
+    commit = last_git_commit
+    puts "*** Iniciando release iOS para commit #{commit[:abbreviated_commit_hash]} ***"
+
+    api_key = lane_context[SharedValues::APP_STORE_CONNECT_API_KEY]
+
+    # Certificados + Perfis
+    sync_code_signing(
+      api_key: api_key,
+      type: "appstore",
+      app_identifier: "com.txtsoftwares.sorteador",
+      readonly: false
+    )
+
+    build_app(
+      scheme: "Runner",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "signingStyle" => "automatic"
+        }
+      }
+    )  
+
+    # Upload e submete a versão como "Draft ready for Sale" (pronta para publicação na loja)
+    upload_to_app_store(
+      api_key: api_key,
+      app_identifier: "com.txtsoftwares.sorteador",
+      ipa: './Runner.ipa',
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      precheck_include_in_app_purchases: false,
+      copyright: "2025",
+      submission_information: {
+          export_compliance_platform: 'ios',
+          export_compliance_uses_encryption: true,
+      }
+    )
+    # (Opcional: também pode enviar para TestFlight se desejar)
+    # upload_to_testflight(
+    #   api_key: api_key,
+    #   app_identifier: "com.txtsoftwares.sorteador",
+    #   ipa: './Runner.ipa',
+    #   distribute_external: false,
+    #   changelog: "Build enviada para TestFlight interno"
+    # )
+
+    puts "*** Build enviada como DRAFT para App Store + TestFlight interno habilitado ***"
+  end
+
+end
