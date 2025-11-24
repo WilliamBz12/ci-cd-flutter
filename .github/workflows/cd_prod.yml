@@ -29,7 +29,7 @@ jobs:
         echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> key.properties
         echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> key.properties
         echo "keyAlias=upload" >> key.properties
-        echo "storeFile=./keystore.jks" >> key.properties
+        echo "storeFile=./app/keystore.jks" >> key.properties
         cat key.properties
 
     - name: Decode keystore
