@@ -50,7 +50,7 @@ jobs:
         packageName: com.txtsoftwares.sorteador
         releaseFiles: build/app/outputs/bundle/release/app-release.aab
         track: "internal"
-        status: "completed"
+        status: "draft"
     
     - name: Upload Appbundle
       uses: actions/upload-artifact@v4
